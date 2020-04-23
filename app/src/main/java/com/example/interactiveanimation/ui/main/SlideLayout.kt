@@ -2,9 +2,11 @@ package com.example.interactiveanimation.ui.main
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.widget.FrameLayout
+import com.example.interactiveanimation.R
+import kotlin.math.min
+import kotlin.math.max
 
 class SlideLayout : FrameLayout {
 
@@ -16,44 +18,42 @@ class SlideLayout : FrameLayout {
         context: Context,
         attrs: AttributeSet?,
         defStyleAttr: Int
-    ) : super(context, attrs, defStyleAttr)
+    ) : super(context, attrs, defStyleAttr) {
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.SlideLayout)
+        sliderMaxHeight =
+            typedArray.getDimensionPixelSize(R.styleable.SlideLayout_sliderMaxHeight, 0)
+        sliderMinHeight =
+            typedArray.getDimensionPixelSize(R.styleable.SlideLayout_sliderMinHeight, 0)
+        typedArray.recycle()
+        sliderHeight = sliderMinHeight
+    }
 
-    private var width1 = 0
-    private var shouldUpdate = true
+    private var sliderMinHeight = 0
+    private var sliderMaxHeight = 0
+    private var sliderHeight = 0
     private var previousY = 0F
-    private var increase = false
+    private var deltaY = 0F
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when (event?.actionMasked) {
-            MotionEvent.ACTION_MOVE -> {
-                increase = event.y > previousY
-                previousY = event.y
-                Log.d("***", "move" + event.y)
-                requestLayout()
-            }
-            MotionEvent.ACTION_UP -> {
-
-                Log.d("***", "up")
-            }
             MotionEvent.ACTION_DOWN -> {
-                Log.d("***", "down")
+                previousY = event.y
+            }
+            MotionEvent.ACTION_MOVE -> {
+                deltaY = (previousY- event.y)
+                previousY = event.y
+                requestLayout()
             }
         }
         return true
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        if (shouldUpdate) {
-            width1 = MeasureSpec.getSize(heightMeasureSpec)
-            shouldUpdate = false
-        }
-        if (increase) {
-            width1 += 50
-        } else {
-            width1 -= 50
-        }
+            sliderHeight += deltaY.toInt()
+            sliderHeight = min(sliderHeight, sliderMaxHeight)
+            sliderHeight = max(sliderHeight, sliderMinHeight)
         val heightMeasureSpec =
-            MeasureSpec.makeMeasureSpec(width1, MeasureSpec.getMode(heightMeasureSpec))
+            MeasureSpec.makeMeasureSpec(sliderHeight, MeasureSpec.getMode(heightMeasureSpec))
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 }

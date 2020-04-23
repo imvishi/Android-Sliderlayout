@@ -5,15 +5,23 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
+    android:background="@drawable/android"
+    android:orientation="vertical"
     tools:context=".MainActivity">
+
+    <View
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:alpha="0"
+        android:background="@color/colorOverlay" />
 
     <com.example.interactiveanimation.ui.main.SlideLayout
         android:id="@+id/slider"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:layout_gravity="bottom"
+        android:layout_height="@dimen/slider_min_height"
         android:background="@drawable/slider_drawable"
-        app:sliderMaxHeight="500dp"
-        app:sliderMinHeight="80dp" />
+        app:sliderMaxHeight="@dimen/slider_max_height"
+        app:sliderMinHeight="@dimen/slider_min_height" />
 </LinearLayout>

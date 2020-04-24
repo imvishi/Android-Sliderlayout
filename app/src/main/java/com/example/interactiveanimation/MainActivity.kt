@@ -2,7 +2,7 @@ package com.example.interactiveanimation
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.interactiveanimation.ui.main.MainFragment
+import com.example.interactiveanimation.ui.main.CommentFragment
 import kotlinx.android.synthetic.main.main_activity.*
 
 class MainActivity : AppCompatActivity() {
@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.slider, MainFragment.newInstance())
+                .replace(R.id.slider, CommentFragment.newInstance())
                 .commitNow()
         }
         val maxSliderHeight = resources.getDimension(R.dimen.slider_max_height)

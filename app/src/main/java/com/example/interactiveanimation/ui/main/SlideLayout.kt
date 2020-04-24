@@ -1,13 +1,17 @@
 package com.example.interactiveanimation.ui.main
 
+import android.animation.AnimatorSet
+import android.animation.ValueAnimator
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.FrameLayout
 import com.example.interactiveanimation.R
-import kotlin.math.min
 import kotlin.math.max
+import kotlin.math.min
 
+private const val ANIMATION_DURATION = 500L
 class SlideLayout : FrameLayout {
 
     constructor(context: Context) : this(context, null)
@@ -32,7 +36,37 @@ class SlideLayout : FrameLayout {
     private var sliderMaxHeight = 0
     private var sliderHeight = 0
     private var previousY = 0F
-    private var deltaY = 0F
+
+    private fun calculateSliderHeight(eventY: Float) {
+        val deltaY = (previousY - eventY)
+        sliderHeight += deltaY.toInt()
+        sliderHeight = min(sliderHeight, sliderMaxHeight)
+        sliderHeight = max(sliderHeight, sliderMinHeight)
+    }
+
+    private fun slideWithAnimation() {
+        val toHeight = when {
+            sliderHeight == sliderMinHeight -> sliderMaxHeight
+            sliderHeight == sliderMaxHeight -> sliderMinHeight
+            sliderMaxHeight - sliderHeight < sliderHeight - sliderMinHeight -> sliderMaxHeight
+            else -> sliderMinHeight
+        }
+        val slideAnimator = ValueAnimator
+            .ofInt(sliderHeight, toHeight)
+            .setDuration(ANIMATION_DURATION)
+            .also {
+                it.addUpdateListener {
+                    sliderHeight = it.animatedValue as Int
+                    requestLayout()
+                }
+            }
+
+        AnimatorSet().also {
+            it.interpolator = AccelerateDecelerateInterpolator()
+            it.play(slideAnimator)
+            it.start()
+        }
+    }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when (event?.actionMasked) {
@@ -40,20 +74,20 @@ class SlideLayout : FrameLayout {
                 previousY = event.y
             }
             MotionEvent.ACTION_MOVE -> {
-                deltaY = (previousY- event.y)
-                previousY = event.y
+                calculateSliderHeight(eventY = event.y)
                 requestLayout()
+            }
+            MotionEvent.ACTION_UP -> {
+                slideWithAnimation()
             }
         }
         return true
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-            sliderHeight += deltaY.toInt()
-            sliderHeight = min(sliderHeight, sliderMaxHeight)
-            sliderHeight = max(sliderHeight, sliderMinHeight)
-        val heightMeasureSpec =
+        super.onMeasure(
+            widthMeasureSpec,
             MeasureSpec.makeMeasureSpec(sliderHeight, MeasureSpec.getMode(heightMeasureSpec))
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        )
     }
 }
